@@ -1,21 +1,21 @@
 package usecase
 
 import (
-	"fmt"
-
 	"github.com/celiotk/lab-otel/internal/entity"
 )
 
 var ErrCepNotFound = entity.ErrCepNotFound
+var ErrInvalidCep = entity.ErrInvalidCep
 
 type TemperatureFromCepInput struct {
 	CEP string
 }
 
 type TemperatureFromCepOutput struct {
-	Temp_C string `json:"temp_C"`
-	Temp_F string `json:"temp_F"`
-	Temp_K string `json:"temp_K"`
+	City   string  `json:"city"`
+	Temp_C float64 `json:"temp_C"`
+	Temp_F float64 `json:"temp_F"`
+	Temp_K float64 `json:"temp_K"`
 }
 
 type TemperatureFromCepUsecase struct {
@@ -47,8 +47,9 @@ func (u *TemperatureFromCepUsecase) Execute(input TemperatureFromCepInput) (*Tem
 	weather.ConvertToFahrenheitAndKelvin()
 
 	return &TemperatureFromCepOutput{
-		Temp_C: fmt.Sprintf("%.1f", weather.TempCelsius),
-		Temp_F: fmt.Sprintf("%.1f", weather.TempFahrenheit),
-		Temp_K: fmt.Sprintf("%.1f", weather.TempKelvin),
+		City:   cep.City,
+		Temp_C: weather.TempCelsius,
+		Temp_F: weather.TempFahrenheit,
+		Temp_K: weather.TempKelvin,
 	}, nil
 }

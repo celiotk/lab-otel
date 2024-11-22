@@ -21,11 +21,13 @@ func main() {
 	locationProvider := provider.NewViaCepProvider()
 	temperatureProvider := provider.NewWeatherApiProvider(context.Background(), configs.WeatherAPIKey)
 	uc := usecase.NewTemperatureFromCepUsecase(temperatureProvider, locationProvider)
-	webOrderHandler := web.NewWeatherHandler(*uc)
+	weatherHandler := web.NewWeatherHandler(*uc)
 
 	ws := webserver.NewWebServer(configs.WebServerPort)
-	ws.AddHandler("/temperature/{cep}", webOrderHandler.GetWeather, http.MethodGet)
+	ws.AddHandler("/temperature/{cep}", weatherHandler.GetWeather, http.MethodGet)
 	fmt.Println("Starting web server on port", configs.WebServerPort)
-	ws.Start()
+	if err := ws.Start(); err != nil {
+		panic(err)
+	}
 
 }
