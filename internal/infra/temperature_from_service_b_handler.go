@@ -30,7 +30,7 @@ func NewServiceAHandler(uc usecase.TemperatureFromServiceBUsecase, otelTrace tra
 func (h *temperatureFromServiceBHandler) PostTemperature(w http.ResponseWriter, r *http.Request) {
 	carrier := propagation.HeaderCarrier(r.Header)
 	ctx := otel.GetTextMapPropagator().Extract(r.Context(), carrier)
-	ctx, span := h.otelTrace.Start(ctx, "temeratureFromServiceBHandler.PostTemperature")
+	ctx, span := h.otelTrace.Start(ctx, "temperatureFromServiceBHandler.PostTemperature")
 	defer span.End()
 
 	param := struct {
