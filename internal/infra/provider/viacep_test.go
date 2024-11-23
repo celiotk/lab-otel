@@ -1,12 +1,15 @@
 package provider
 
 import (
+	"context"
 	"testing"
+
+	"go.opentelemetry.io/otel"
 )
 
 func TestGetCep(t *testing.T) {
-	cep := NewViaCepProvider()
-	result, err := cep.Get("01001-000")
+	cep := NewViaCepProvider(otel.Tracer("test"))
+	result, err := cep.Get(context.Background(), "01001-000")
 	if err != nil {
 		t.Error(err)
 		return
@@ -18,7 +21,7 @@ func TestGetCep(t *testing.T) {
 		t.Error("City not found")
 	}
 
-	_, err = cep.Get("99999999")
+	_, err = cep.Get(context.Background(), "99999999")
 	if err == nil {
 		t.Error("Expected error")
 	}

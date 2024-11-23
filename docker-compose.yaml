@@ -1,6 +1,24 @@
 version: '3'
 
 services:
+  otel-collector:
+    image: otel/opentelemetry-collector:0.101.0
+    restart: always
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./.docker/otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    ports:
+      - "4317:4317"   # OTLP gRPC receiver
+
+  zipkin:
+    container_name: zipkin
+    image: openzipkin/zipkin:latest
+    restart: always
+    depends_on:
+      - otel-collector
+    ports:
+      - "9411:9411"
+
   goapp-a:
     build:
       context: .
@@ -12,6 +30,9 @@ services:
     environment:
       - SERVICE_B_ADDRESS=goapp-b:8080
       - WEB_SERVER_PORT=:8181
+      - OTEL_EXPORTER_OTLP_ENDPOINT=otel-collector:4317
+    depends_on:
+      - otel-collector
   
   goapp-b:
     build: .
@@ -21,3 +42,6 @@ services:
       - .:/app
     environment:
       - WEB_SERVER_PORT=:8080
+      - OTEL_EXPORTER_OTLP_ENDPOINT=otel-collector:4317
+    depends_on:
+      - otel-collector

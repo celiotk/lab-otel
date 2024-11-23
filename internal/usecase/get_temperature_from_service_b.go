@@ -1,7 +1,10 @@
 package usecase
 
 import (
+	"context"
+
 	"github.com/celiotk/lab-otel/internal/entity"
+	"go.opentelemetry.io/otel/trace"
 )
 
 type TemperatureFromServiceBInput struct {
@@ -17,16 +20,21 @@ type TemperatureFromServiceBOutput struct {
 
 type TemperatureFromServiceBUsecase struct {
 	temperatureProvider entity.TempFromServiceBInterface
+	otelTracer          trace.Tracer
 }
 
-func NewTemperatureFromServiceBUsecase(weatherQuery entity.TempFromServiceBInterface) *TemperatureFromServiceBUsecase {
+func NewTemperatureFromServiceBUsecase(weatherQuery entity.TempFromServiceBInterface, otelTracer trace.Tracer) *TemperatureFromServiceBUsecase {
 	return &TemperatureFromServiceBUsecase{
 		temperatureProvider: weatherQuery,
+		otelTracer:          otelTracer,
 	}
 }
 
-func (u *TemperatureFromServiceBUsecase) Execute(input TemperatureFromServiceBInput) (*TemperatureFromServiceBOutput, error) {
-	weather, err := u.temperatureProvider.Get(input.CEP)
+func (u *TemperatureFromServiceBUsecase) Execute(ctx context.Context, input TemperatureFromServiceBInput) (*TemperatureFromServiceBOutput, error) {
+	ctx, span := u.otelTracer.Start(ctx, "TemperatureFromServiceBUsecase.Execute")
+	defer span.End()
+
+	weather, err := u.temperatureProvider.Get(ctx, input.CEP)
 	switch err {
 	case entity.ErrCepNotFound:
 		return nil, ErrCepNotFound

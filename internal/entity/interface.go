@@ -1,13 +1,15 @@
 package entity
 
+import "context"
+
 type TemperatureProviderInterface interface {
-	Get(city string) (*Weather, error)
+	Get(ctx context.Context, city string) (*Weather, error)
 }
 
 type LocationProviderInterface interface {
-	Get(cep string) (*CEP, error)
+	Get(ctx context.Context, cep string) (*CEP, error)
 }
 
 type TempFromServiceBInterface interface {
-	Get(cep string) (*Weather, error)
+	Get(ctx context.Context, cep string) (*Weather, error)
 }

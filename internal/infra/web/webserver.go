@@ -1,6 +1,7 @@
 package webserver
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -14,16 +15,16 @@ type methodPatternHandler struct {
 }
 
 type WebServer struct {
-	Router        chi.Router
-	Handlers      []methodPatternHandler
-	WebServerPort string
+	Router   chi.Router
+	Handlers []methodPatternHandler
+	Server   *http.Server
 }
 
 func NewWebServer(serverPort string) *WebServer {
 	return &WebServer{
-		Router:        chi.NewRouter(),
-		Handlers:      []methodPatternHandler{},
-		WebServerPort: serverPort,
+		Router:   chi.NewRouter(),
+		Handlers: []methodPatternHandler{},
+		Server:   &http.Server{Addr: serverPort},
 	}
 }
 
@@ -43,5 +44,14 @@ func (s *WebServer) Start() error {
 	for _, handler := range s.Handlers {
 		s.Router.MethodFunc(handler.method, handler.pattern, handler.handler)
 	}
-	return http.ListenAndServe(s.WebServerPort, s.Router)
+	s.Server.Handler = s.Router
+	err := s.Server.ListenAndServe()
+	if err != nil && err != http.ErrServerClosed {
+		return err
+	}
+	return nil
+}
+
+func (s *WebServer) Stop(ctx context.Context) error {
+	return s.Server.Shutdown(ctx)
 }

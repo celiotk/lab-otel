@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/celiotk/lab-otel/configs"
+	"go.opentelemetry.io/otel"
 )
 
 func TestWeatherApiProvider(t *testing.T) {
@@ -13,8 +14,8 @@ func TestWeatherApiProvider(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	weather := NewWeatherApiProvider(context.Background(), cfg.WeatherAPIKey)
-	result, err := weather.Get("São Paulo")
+	weather := NewWeatherApiProvider(cfg.WeatherAPIKey, otel.Tracer("test"))
+	result, err := weather.Get(context.Background(), "São Paulo")
 	if err != nil {
 		t.Error(err)
 		return
